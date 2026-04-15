@@ -4,6 +4,8 @@ Visualize the risk network as an interactive graph.
 
 import numpy as np
 import networkx as nx
+import matplotlib
+matplotlib.use('Agg')  # Use non-interactive backend for headless environments
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib.cm import ScalarMappable
@@ -119,15 +121,16 @@ def visualize_network(
     nx.draw_networkx_labels(G_sub, pos, label_dict, ax=ax_net,
         font_size=6, font_color='white', font_weight='bold')
 
-    for y_frac, label in LAYER_Y.items():
+    # Draw layer reference lines
+    for layer_name, layer_y_frac in LAYER_Y.items():
         ys = [v[1] for v in pos.values()]
         if not ys:
             continue
         y_mn, y_mx = min(ys), max(ys)
-        y_data = y_mn + (label / 1.0) * (y_mx - y_mn)
+        y_data = y_mn + layer_y_frac * (y_mx - y_mn)
         ax_net.axhline(y_data, color='white', alpha=0.06, lw=0.6, linestyle='--')
         ax_net.text(ax_net.get_xlim()[0], y_data + 0.008,
-                    f'  {y_frac}', color='white', alpha=0.40, fontsize=7)
+                    f'  {layer_name}', color='white', alpha=0.40, fontsize=7)
 
     ax_net.set_title(
         f'Corruption Risk Network  ·  Top-{top_n} Flagged Projects\n'
@@ -206,5 +209,5 @@ def visualize_network(
         bbox=dict(boxstyle='round,pad=0.5', facecolor='#0f1724', alpha=0.9))
 
     plt.savefig(output_path, dpi=150, bbox_inches='tight', facecolor=BG)
-    plt.show()
+    plt.close(fig)  # Close figure to free memory instead of plt.show() in headless mode
     print(f"\n✅ Visualisasi selesai! File: {output_path}")
