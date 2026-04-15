@@ -79,6 +79,15 @@ def train_ai1(
     off_clean = (df_persons[OFF_FEATS].copy()
                  .rename(columns={c: f'off_{c}' for c in OFF_FEATS if c != 'person_id'}))
 
+    # Merge project data with company and official features to build X_full
+    X_full = df_projects[['project_id', 'official_id', 'winner_company_id', 'is_corrupt']].copy()
+    X_full = X_full.merge(
+        co_clean, left_on='winner_company_id', right_on='company_id', how='left'
+    ).drop(columns=['company_id'], errors='ignore')
+    X_full = X_full.merge(
+        off_clean, left_on='official_id', right_on='person_id', how='left'
+    ).drop(columns=['person_id'], errors='ignore')
+
     # Encode categorical features
     print("[2/5] Processing categorical data...")
     ID_COLS    = ['project_id', 'official_id', 'winner_company_id']
