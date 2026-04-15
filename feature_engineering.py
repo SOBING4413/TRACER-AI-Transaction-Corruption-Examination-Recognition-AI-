@@ -47,6 +47,8 @@ def engineer_features(
     df_persons = df_persons.merge(_inflow, on='person_id', how='left').merge(_outflow, on='person_id', how='left')
     _flow_cols = ['total_inflow', 'inflow_count', 'avg_inflow', 'max_inflow',
                   'total_outflow', 'outflow_count', 'avg_outflow', 'max_outflow']
+    df_persons[_flow_cols] = df_persons[_flow_cols].fillna(0)
+
     # Network signals
     print("[2/8]  Network connections...")
     df_persons = _drop_if_exists(df_persons, ['unique_senders', 'unique_receivers', 'trx_degree'])
