@@ -51,17 +51,30 @@ def main():
     print(f"  Output   : {args.output}")
     print("=" * 60 + "\n")
 
+    # Validate step dependencies
+    if 'transactions' in steps and 'entities' not in steps:
+        print("⚠️  'transactions' requires 'entities'. Adding 'entities' step.")
+        steps.add('entities')
+    if 'features' in steps and ('entities' not in steps or 'transactions' not in steps):
+        print("⚠️  'features' requires 'entities' and 'transactions'. Adding missing steps.")
+        steps.update(['entities', 'transactions'])
+    if 'ai1' in steps and 'features' not in steps:
+        print("⚠️  'ai1' requires 'features'. Adding prerequisite steps.")
+        steps.update(['entities', 'transactions', 'features'])
+    if 'ai2' in steps and 'features' not in steps:
+        print("⚠️  'ai2' requires 'features'. Adding prerequisite steps.")
+        steps.update(['entities', 'transactions', 'features'])
+    if 'visualize' in steps and ('ai1' not in steps or 'ai2' not in steps):
+        print("⚠️  'visualize' requires 'ai1' and 'ai2'. Adding prerequisite steps.")
+        steps.update(['entities', 'transactions', 'features', 'ai1', 'ai2'])
+
     # Generate entities first (required)
     if 'entities' in steps:
         df_persons, df_companies, df_hierarchy = generate_entities()
-    else:
-        raise RuntimeError("need to generate entities first")
 
     # Generate transactions
     if 'transactions' in steps:
         df_all_transactions, df_projects = generate_transactions(df_persons, df_companies)
-    else:
-        raise RuntimeError("need to generate transactions")
 
     # Engineer features
     if 'features' in steps:
