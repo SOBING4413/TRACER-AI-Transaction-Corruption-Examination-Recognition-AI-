@@ -15,9 +15,13 @@ def generate_transactions(df_persons: "pd.DataFrame", df_companies: "pd.DataFram
     print("  Generating Transactions")
     print("=" * 60)
 
+    # Extract entity lists
     ppk_list   = df_persons[df_persons['official_role'] == 'PPK']['person_id'].tolist()
     kadis_list = df_persons[df_persons['official_role'] == 'Head_of_Dept']['person_id'].tolist()
     staff_list = df_persons[df_persons['official_role'] == 'Procurement_Staff']['person_id'].tolist()
+
+    shell_cos  = df_companies[df_companies['true_company_type'] == 'Shell_Company']['company_id'].tolist()
+    normal_cos = df_companies[df_companies['true_company_type'] != 'Shell_Company']['company_id'].tolist()
 
     assert len(ppk_list) > 0,   "no PPKs found"
     assert len(shell_cos) > 0,  "no shell companies"
@@ -26,6 +30,17 @@ def generate_transactions(df_persons: "pd.DataFrame", df_companies: "pd.DataFram
     print(f"  PPKs            : {len(ppk_list)}")
     print(f"  Shell companies : {len(shell_cos)}")
     print(f"  Normal companies: {len(normal_cos)}")
+
+    # Prepare arrays for vectorized generation
+    persons_ids_arr = df_persons['person_id'].values
+    company_ids_arr = df_companies['company_id'].values
+    is_official_arr = df_persons['is_official'].values
+    incomes         = df_persons['monthly_income'].values
+    spend_ratios    = df_persons['spending_to_income_ratio'].values
+    trx_counts_mo   = df_persons['monthly_trx_count_seed'].values.clip(1)
+
+    MONTHS       = 12
+    DAYS_IN_YEAR = 365
 
     # Part 1: Normal/legitimate transactions
     print("\n[Part 1] Generating legitimate transactions...")
